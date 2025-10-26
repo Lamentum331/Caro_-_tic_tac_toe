@@ -16,6 +16,8 @@ public partial class GameForm : Form
     
     private readonly IGameLogic ticTacToeLogic = new TicTacToeLogic();
     private readonly IGameLogic caroLogic = new CaroLogic();
+    
+    private bool useMLAI = true;
 
     public GameForm()
     {
@@ -58,9 +60,9 @@ public partial class GameForm : Form
         currentBoardSize = isCaro ? GameSettings.BOARD_SIZE_CARO : GameSettings.BOARD_SIZE_TIC_TAC_TOE;
 
         var lblTitle = CreateLabel(
-            isCaro ? "Caro Game Mode" : "Tic Tac Toe Game Mode\n(Mỗi bên chỉ có 3 quân)\n",
+            isCaro ? "Chế độ Caro" : "Chế độ Tic Tac Toe\n(Mỗi bên chỉ có 3 quân)",
             new Point(100, 30),
-            new Size(600, 90)
+            new Size(600, 80)
         );
 
         var btnPvP = CreateMenuButton("Player vs Player", new Point(250, 120), Color.LightSalmon);
@@ -179,14 +181,14 @@ public partial class GameForm : Form
 
     private void CreateControlButtons(Panel boardPanel)
     {
-        var btnRestart = CreateMenuButton("Restart Game", 
+        var btnRestart = CreateMenuButton("Chơi lại", 
             new Point(boardPanel.Left + (boardPanel.Width - 420) / 2, boardPanel.Bottom + 20),
             Color.LightBlue);
         btnRestart.Size = new Size(200, 50);
         btnRestart.Font = new Font("Arial", 12, FontStyle.Bold);
         btnRestart.Click += (s, e) => StartGame(isPlayerVsAI);
 
-        var btnMenu = CreateMenuButton("Back to Menu",
+        var btnMenu = CreateMenuButton("Trở về Menu",
             new Point(btnRestart.Right + 20, btnRestart.Top),
             Color.LightGray);
         btnMenu.Size = new Size(200, 50);
@@ -248,7 +250,7 @@ public partial class GameForm : Form
         // Kiểm tra thắng
         if (currentLogic.CheckWin(pos.X, pos.Y, board))
         {
-            MessageBox.Show($"{(isPlayer1Turn ? "Player 1 (X)" : "Player 2 (O)")} wins!");
+            MessageBox.Show($"{(isPlayer1Turn ? "Player 1 (X)" : "Player 2 (O)")} thắng!");
             StartGame(isPlayerVsAI);
             return;
         }
@@ -256,7 +258,7 @@ public partial class GameForm : Form
         // Kiểm tra hòa (chỉ với Caro, Tic Tac Toe 3 quân không có hòa)
         if (isCaroMode && IsBoardFull())
         {
-            MessageBox.Show("Game is a draw!");
+            MessageBox.Show("Hòa!");
             StartGame(isPlayerVsAI);
             return;
         }
@@ -291,9 +293,24 @@ public partial class GameForm : Form
     {
         // Cập nhật toàn bộ UI từ board state
         for (int i = 0; i < currentBoardSize; i++)
+        {
             for (int j = 0; j < currentBoardSize; j++)
+            {
                 boardButtons[i, j].Text = board[i, j];
-    }
+
+                // ĐÃ THÊM: Đặt màu chữ cho X và O trong Caro
+                if (isCaroMode)
+                {
+                    if (board[i, j] == "X")
+                        boardButtons[i, j].ForeColor = Color.Red;
+                    else if (board[i, j] == "O")
+                        boardButtons[i, j].ForeColor = Color.Blue;
+                    else
+                        boardButtons[i, j].ForeColor = Color.Black;
+                }
+            }
+        }
+    }    
 
     private void UpdateTurnLabel()
     {
@@ -344,7 +361,7 @@ public partial class GameForm : Form
                 // Kiểm tra thắng
                 if (currentLogic.CheckWin(movePosition.Value.X, movePosition.Value.Y, board))
                 {
-                    MessageBox.Show("AI wins!");
+                    MessageBox.Show("AI thắng!");
                     StartGame(isPlayerVsAI);
                     return;
                 }
@@ -352,7 +369,7 @@ public partial class GameForm : Form
                 // Kiểm tra hòa (chỉ với Caro)
                 if (isCaroMode && IsBoardFull())
                 {
-                    MessageBox.Show("Game is a draw!");
+                    MessageBox.Show("Hòa!");
                     StartGame(isPlayerVsAI);
                     return;
                 }
